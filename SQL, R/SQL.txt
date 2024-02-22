@@ -1,0 +1,644 @@
+--17. Provide a query that shows total sales (count and sum) made by each sales agent.
+--HINT: first you can create a query to find the name, the invoice ID and the 'total' for each Sales Agent
+--and you can use this table for the aggregate functions
+
+Select SUM(Total) AS TotalSaleSum, Count(Name) AS TotalCountofAgent, Name
+FROM(
+Select E.LastName||' '||E.FirstName as Name, I.invoiceid, I.Total from employees E
+INNER JOIN customers C ON C.SupportRepId = E.Employeeid
+INNER JOIN invoices I ON I.customerid = C.CustomerId
+where E.title like '%sales%') as subquery
+group by Name;
+
+
+--18. Which sales agent made the most in sales over all? And what amount?
+--HINT1: First create a table with Sales Agent name and the invoice total for each invoice
+--HINT2: summarize the total by Sales Agent
+--HINT3: order by total sales and limit to 1
+
+Select Name, sum(Total) as TotalSales from (
+Select E.LastName||' '||E.FirstName as Name, I.Total from employees E
+INNER JOIN customers C ON C.SupportRepId = E.Employeeid
+INNER JOIN invoices I ON I.customerid = C.CustomerId
+where E.title like '%sales%') as subquery
+group by Name
+Order by TotalSales DESC Limit 1
+
+
+--19. Which sales agent made the most in sales in 2009? Show also the total of his/her sales
+--HINT1: first find for each invoice the name of the Sales Agent, the total and the Invoice Year
+--HINT2: summarize the total only for Year 2009
+--HINT3: order by total sales and limit to 1
+
+Select SUM(Total) AS TotalSaleSum, Count(Name) AS TotalCountofAgent, Name
+FROM(
+Select E.LastName||' '||E.FirstName as Name, strftime('%Y',I.InvoiceDate) as Year, I.Total from employees E
+INNER JOIN customers C ON C.SupportRepId = E.Employeeid
+INNER JOIN invoices I ON I.customerid = C.CustomerId
+where Year = '2009') as subquery
+group by Name
+Order by  TotalSaleSum DESC Limit 1
+
+
+--20. Provide a query that shows the # of customers assigned to each sales agent (ID and Full name)
+--HINT1: First find the Sales Agent (with ID and Full name) for each customer
+--HINT2: After, it's a count of customers by Agent
+
+Select e.employeeid as SalesAgentID,
+       E.LastName||' '||E.FirstName as SalesAgentName,
+       Count(c.customerid) as Noofcustomers
+       From employees e
+       left Join customers c on e.employeeid = c.SupportRepId
+       group by 
+       e.employeeid, e.FirstName, e.LastName
+
+--21. Provide a query that shows the total sales per country.
+-- Show in a separate column which country's customers spent the most? 'This country''s customers spent the most' as Answer
+
+Select sum(Total) as TotalSales, BillingCountry from invoices
+Group by BillingCountry;
+Select TotalSales, BillingCountry,
+CASE 
+    When TotalSales = max(TotalSales) Then 'This country''s customers spent the most' Else ''
+    End As Mostspentcountry
+from (Select sum(Total) as TotalSales, BillingCountry from invoices
+Group by BillingCountry);
+
+
+
+
+--22. Provide a query that shows the 5 most purchased track ever.
+
+
+Select Name, Count(DISTINCT a.InvoiceLineid) as MostPurchased
+from invoice_items a
+inner join tracks b on a.TrackId = b.TrackId
+Group by Name
+Order by MostPurchased desc
+Limit 5
+
+
+--23. Provide a query that shows the most purchased track ever.
+
+Select Name, Count(DISTINCT a.InvoiceLineid) as MostPurchased
+from invoice_items a
+inner join tracks b on a.TrackId = b.TrackId
+Group by Name
+Order by MostPurchased desc
+Limit 1
+
+
+--24. Provide a query that shows the most purchased track of 2013.
+Name, Count(DISTINCT a.InvoiceLineId) as MostPurchasedin2013
+Select c.Name, Count(Sum b.total)
+from invoice_items a
+inner join invoices b on a.InvoiceId = b.invoiceid
+inner join tracks c on c.TrackId = a.TrackId
+Where invoicedate between '2013-01-01' and '2013-12-31'
+Order by b.InvoiceDate desc
+
+
+--25. Provide a query that shows the top 3 best selling artists.
+--HINT1: First find a table with Composer's name and the number of Invoice lines associated to them
+--HINT2: NULL is not the most popular composer
+
+Select Composer, Count(DISTINCT b.InvoiceLineid) as bestartists from tracks a
+inner join invoice_items b on a.trackid = b.TrackId
+group by composer
+
+
+--25. Provide a query that shows the most purchased Media Type.
+--HINT: First create a table with media types and number of invoice lines
+--where the track is associated to this media type.
+--Check NULLs if needed
+
+SELECT
+b.Name as Media_Type,
+COUNT(DISTINCT a.InvoiceLineId) as MostPurchasedsongs
+FROM invoice_items a
+inner JOIN tracks c ON a.TrackId = c.TrackId
+inner JOIN media_types b ON c.MediaTypeId = b.MediaTypeId
+
+
+-- Find all employees
+
+Select first_name || ' ' || last_name as EmployeeName from employee
+-- Find all clients
+
+Select Client_name from client
+
+-- Find all employees ordered by salary
+
+Select first_name || ' ' || last_name as EmployeeName from employee
+order by salary
+
+-- Find all employees ordered by decreasing salary (highest salary first)
+
+Select salary, first_name || ' ' || last_name as EmployeeName from employee
+order by salary desc
+
+-- Find all employees ordered by sex then last name
+
+Select sex, last_name from employee
+order by sex and last_name
+
+-- Find the first 5 employees in the table
+
+Select first_name || ' ' || last_name as EmployeeName from employee
+order by emp_id
+limit 5
+-- Find the first and last names of all employees
+
+Select first_name, last_name from employee
+
+-- Find the forename and surnames names of all employees
+
+Select first_name as forename, last_name as surname from employee
+
+-- Find out all the different genders
+
+Select sex, first_name || ' ' || last_name as EmployeeName from employee
+
+-- Find all male employees
+
+Select sex, first_name || ' ' || last_name as EmployeeName from employee
+where sex = 'M'
+
+
+-- Find all employees at branch 2
+
+Select * from employee
+where branch_id = 2
+
+-- Find all employee's id's and names who were born after 1969
+
+SELECT emp_id, first_name || ' ' || last_name as EmployeeName, birth_day from employee
+where birth_day >= '1969-01-01'
+
+-- Find all female employees at branch 2
+
+Select * from employee
+where branch_id = 2 and sex = 'F'
+
+-- Find all employees who are female & born after 1969 or who make over 80000
+
+Select * from employee
+where sex = 'F' and birth_day = '1969-01-01' or salary > 80000
+
+-- Find all employees born between 1970 and 1975
+
+Select * from employee
+where birth_day BETWEEN '1970-01-01' AND '1975-01-01'
+
+-- Find all employees named Jim, Michael, Johnny or David
+
+SELECT first_name FROM employee
+where first_name = 'jim' or first_name = 'Michael' or first_name = 'Johnny' or first_name = 'David'
+
+--Find the average salary
+
+Select avg(salary) as avgsalaryfrom employee
+
+--Find the average salary by sex
+
+Select sex, avg(salary) as avgsalary from employee
+group by sex
+
+--Find the average salary by sex for those employees who earn more than 76000
+
+Select sex, avg(salary) as avgsalary from employee
+group by sex
+having salary >= 76000
+
+--Find the average salary by sex for those sexes whose average salary is greater than 76000
+
+Select sex, avg(salary) as avgsalary from employee
+group by sex
+having salary >= 76000
+
+--Find the first name, the sex, and the salary of those employees whose salary is over the average (it is a bit tricky, but intuitive)
+
+Select first_name, sex from employee
+where salary > (select avg(salary) as avgsalary from employee)
+
+--Use the chinook database:
+-- Give the total sales for each country, show the highest on the top
+
+Select BillingCountry, SUM(Total) as TotalSales from invoices
+group by BillingCountry
+Order by TotalSales desc
+
+-- Give the country in which sales are the highest and show the total sales
+
+Select BillingCountry, SUM(Total) as TotalSales from invoices
+group by BillingCountry
+Order by TotalSales desc
+Limit 1
+
+--Add a column to the invoices tables that contains only the year, put it at the beginning of the table
+
+--This is the code to add Invoices_year in the invoices table, but it cannot be added at the beginning
+
+Alter Table invoices
+Add Column Invoices_year;
+
+--This is the code to add the new column at the beginning. invoices TABLE cannot be dropped because of foreign key constraints. We have to drop the invoices table and rename invoices_2 to invoices.
+
+Create table invoices_2 (
+Invoices_year, Invoiceid, Customerid, InvoiceDate, BillingAddress, BillingCity, BillingState, BillingCountry, BillingPostalCode, Total);
+
+
+INSERT INTO invoices_2 (Invoices_year, Invoiceid, Customerid, InvoiceDate, BillingAddress, BillingCity, BillingState, BillingCountry, BillingPostalCode, Total)
+Values (2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031, 2032);
+Select Invoices_year, Invoiceid, Customerid, InvoiceDate, BillingAddress, BillingCity, BillingState, BillingCountry, BillingPostalCode, Total From invoices;
+
+
+--1. print out the titles of the artist whose ArtistId is 50, in a second column, print also the name of the artist
+SELECT DISTINCT
+a.Title, b.Name
+FROM albums a LEFT JOIN artists b ON a.ArtistId = b.ArtistId
+WHERE a.ArtistId = 50;
+
+--2. print out the track name and albums title of the first 20 tracks in the tracks table
+SELECT
+a.Name as TrackName, b.Title as AlbumTitle
+FROM tracks a LEFT JOIN albums b ON a.AlbumId = b.AlbumId
+ORDER BY TrackId ASC
+LIMIT 20;
+
+--3. for the first 12 sales, print what are the names of the track sold, and the quantity sold
+SELECT
+b.Name, sum(a.Quantity) as Quantity
+FROM invoice_items a LEFT JOIN tracks b ON a.TrackId = b.TrackId
+WHERE a.InvoiceLineId<=12
+GROUP BY b.Name;
+
+--4. print the names of top 5 tracks sold, and how many times they were sold
+SELECT
+b.Name,
+count(a.Quantity) as Quantity
+FROM invoice_items a LEFT JOIN tracks b ON a.TrackId = b.TrackId
+GROUP BY b.Name
+ORDER BY Quantity DESC
+LIMIT 5;
+
+--5. Provide a query showing the Invoices of customers who are from Brazil. 
+--The resultant table should show the customer's full name, Invoice ID, Date of the invoice and billing country.
+SELECT
+a.LastName,
+a.FirstName,
+--a.LastName||' '||a.FirstName as FullName,
+b.InvoiceId,
+b.InvoiceDate,
+b.BillingCountry
+FROM customers a left join invoices b on a.CustomerId = b.CustomerId
+WHERE a.Country = 'Brazil';
+
+--6. Provide a query that shows the invoices associated with each sales agent. The resultant table should include the Sales Agent's full name.
+SELECT DISTINCT
+c.FirstName,
+c.LastName,
+--c.Title,
+a.*
+FROM invoices a left join customers b on a.CustomerId = b.CustomerId
+LEFT JOIN employees c on b.SupportRepId = c.EmployeeId
+where c.Title LIKE 'Sales %Agent';
+
+--7. Provide a query that shows the Invoice Total, Customer name, Country and Sale Agent name for all invoices and customers.
+SELECT DISTINCT
+a.Total,
+b.LastName||' '||b.FirstName as CustomerName,
+a.BillingCountry,
+c.LastName||' '||c.FirstName as AgentName
+FROM invoices a left join customers b on a.CustomerId = b.CustomerId
+LEFT JOIN employees c on b.SupportRepId = c.EmployeeId
+where c.Title LIKE 'Sales %Agent';
+
+--8. Looking at the Invoice items table, provide a query that COUNTs the number of line items for Invoice ID 37.
+SELECT
+COUNT(b.InvoiceLineId) as InvoiceLineCount
+FROM invoices a LEFT JOIN invoice_items b on a.InvoiceId = b.InvoiceId
+WHERE a.InvoiceId = 37;
+
+--9. Looking at the Invoice items table, provide a query that COUNTs the number of line items for each Invoice. HINT: GROUP BY
+SELECT
+a.InvoiceId,
+COUNT(b.InvoiceLineId) as InvoiceLineCount
+FROM invoices a LEFT JOIN invoice_items b on a.InvoiceId = b.InvoiceId
+GROUP BY a.InvoiceId
+ORDER BY a.InvoiceId ASC;
+
+--10. Provide a query that shows all the Tracks, but displays no IDs. The resultant table should include the Album name, Media type and Genre.
+SELECT
+a.Name as Track_Name,
+b.Title as Album_Name,
+c.Name as Media_Type,
+d.Name as Genre_Name
+FROM tracks a LEFT JOIN albums b ON a.AlbumId = b.AlbumId
+LEFT JOIN media_types c ON a.MediaTypeId = c.MediaTypeId
+LEFT JOIN genres d ON a.GenreId = d.GenreId;
+
+--11. Provide a query that shows all Invoices but includes the # of invoice line items.
+SELECT
+a.*,
+COUNT(DISTINCT InvoiceLineId) as CountInvoiceLines
+FROM invoices a LEFT JOIN invoice_items b ON a.InvoiceId = b.InvoiceId
+GROUP BY a.InvoiceId
+ORDER BY a.InvoiceId ASC;
+
+--12. If an employee reports to a manager, the value of the ReportsTo column of the employee's row is equal to 
+--the value of the EmployeeId column of the manager's row. 
+--In case an employee does not report to anyone, the ReportsTo column is NULL.
+-- Get the information on who is the direct report of whom.
+SELECT m.firstname || ' ' || m.lastname AS 'Manager',
+       e.firstname || ' ' || e.lastname AS 'Direct report' 
+FROM employees e
+INNER JOIN employees m ON m.employeeid = e.reportsto
+ORDER BY manager;
+
+--13. Modify the previous query to also show employees who do not report to anyone
+SELECT m.firstname || ' ' || m.lastname AS 'Manager',
+       e.firstname || ' ' || e.lastname AS 'Direct report' 
+FROM employees e
+LEFT JOIN employees m ON m.employeeid = e.reportsto
+ORDER BY manager;
+
+--14. Modify the query showing employees and people who are reporting them
+--including employees who are at the bottom level of the hierarchy
+SELECT m.firstname || ' ' || m.lastname AS 'Manager',
+       e.firstname || ' ' || e.lastname AS 'Direct report' 
+FROM employees e
+RIGHT JOIN employees m ON m.employeeid = e.reportsto
+ORDER BY manager;
+
+--15. List people who are not a Manager: show that there is noone who reports them 
+SELECT m.firstname || ' ' || m.lastname AS 'Not really a Manager',
+       e.firstname || ' ' || e.lastname AS 'Direct report' 
+FROM employees e
+RIGHT JOIN employees m ON m.employeeid = e.reportsto
+WHERE e.ReportsTo IS NULL
+ORDER BY 'Not really a Manager';
+
+--16. Find the employees located in the same city
+SELECT DISTINCT
+	e1.city,
+	e1.firstName || ' ' || e1.lastname AS fullname
+FROM
+	employees e1
+INNER JOIN employees e2 ON e2.city = e1.city 
+   AND (e1.firstname <> e2.firstname AND e1.lastname <> e2.lastname)
+ORDER BY
+	e1.city;
+	
+	
+	--1. Provide a query that includes the track name with each invoice line item.
+Select Name, invoicelineid from tracks a
+inner join invoice_items b on a.trackid = b.trackid;
+
+--2. Provide a query that includes the purchased track name AND artist name with each invoice line item.
+
+Select a.name as TrackName , d.Name as ArtistName, b.invoicelineid from tracks a
+inner join invoice_items b on a.TrackId = b.TrackId
+inner join albums c on a.AlbumId = c.AlbumId
+inner join artists d on d.Artistid = c.ArtistId;
+
+
+--3. Provide a query that shows the total number of tracks in each playlist. The Playlist name should be included on the resultant table.
+
+select 
+       a.Name AS PlaylistName,
+       COUNT(b.TrackId) AS TotalTracks FROM tracks a
+left join playlist_track b on a.trackid = b.TrackId
+left join playlists c on b.playlistid = c.playlistid
+group by a.Name;
+
+--or
+
+select 
+       a.Name AS PlaylistName,
+       COUNT(b.TrackId) AS TotalTracks FROM tracks a
+join playlist_track b on a.trackid = b.TrackId
+join playlists c on b.playlistid = c.playlistid
+group by a.Name;
+
+
+--4. Provide a query that shows the Sales Agent for each customer
+--You need the employee ID, employee full name and the costumer a.CustomerId
+--sort by the customer ID to facilitate the check of your work
+
+select a.EmployeeId,a.firstname ||' '|| a.lastname as SalesAgent, b.firstname ||' '|| b.lastname as Customer,b.CustomerId from employees a
+inner join customers b on a.employeeid = b.supportrepid order by b.CustomerId;
+
+
+--5. Find the Sales Agent name, the invoice ID and the 'total' for each invoice
+
+select DISTINCT(a.firstname ||' '|| a.lastname) as SalesAgent, invoiceid, total from employees a
+inner join customers b on a.employeeid = b.supportrepid
+inner join invoices c on c.customerid = b.customerid;
+
+--6. Find for each invoice the name of the Sales Agent, the total and the Invoice Year
+
+select a.firstname ||' '|| a.lastname as SalesAgent, strftime('%Y',c.InvoiceDate) as Year, total from employees a
+inner join customers b on a.employeeid = b.supportrepid
+inner join invoices c on c.customerid = b.customerid;
+
+select c.InvoiceId,a.firstname ||' '|| a.lastname as SalesAgent, strftime('%Y',c.InvoiceDate) as Year, Sum(c.total) from employees a
+inner join customers b on a.employeeid = b.supportrepid
+inner join invoices c on c.customerid = b.customerid
+group by SalesAgent,Year;
+
+--7. Find the customers located in the same city, get their country, city and full name
+
+select a.firstname ||' '|| a.lastname as CustomerName, a.city, a.country from customers a
+join customers b on a.City = b.City and a.customerid  <> b.customerid;
+
+
+
+--8. Find a query that returns the name and the purchase count of each track
+-- sort in descending order by the count
+SELECT a.Name AS TrackName, COUNT(b.InvoiceLineId) AS PurchaseCount FROM tracks a
+JOIN invoice_items b ON a.TrackId = b.TrackId
+GROUP BY a.TrackId
+ORDER BY PurchaseCount DESC;
+
+--9. Find a query that returns the name and the purchase count of each track in 2013
+-- sort in descending order by the count
+
+SELECT DISTINCT(c.InvoiceDate) as Date, a.Name AS TrackName, COUNT(b.InvoiceLineId) AS PurchaseCount FROM tracks a
+JOIN invoice_items b ON a.TrackId = b.TrackId
+join invoices c on c.InvoiceId = b.InvoiceId
+WHERE invoicedate Between '2013-01-01' and '2013-12-31'
+GROUP BY date
+ORDER BY PurchaseCount DESC;
+
+--10. Find a table with Composer's name and the number of Invoice lines associated to them
+--Sort the table by the number of songs sold in descending order.
+--Avoid songs without composer (IS NOT NULL)
+
+SELECT a.Composer, b.invoicelineid FROM tracks a
+JOIN invoice_items b ON a.TrackId = b.TrackId
+join invoices c on c.InvoiceId = b.InvoiceId
+order by b.InvoiceLineId
+Where a.Composer >< 'not null'
+;
+
+Q
+--11. Find a table with media types and number of invoice lines
+--where the track is associated to this media type.
+
+select DISTINCT(c.InvoiceId) as countofinvoicelines, a.name as Filename from media_types a
+inner join tracks b on a.MediaTypeId = b.MediaTypeId
+inner join invoice_items c on c.TrackId = b.trackid;
+
+Q
+--12. Find a query that returns the table for each invoice line:
+--the Invoice ID, the Track ID and the Genre ID
+
+SELECT a.TrackId, d.genreid, c.invoiceid FROM tracks a
+JOIN invoice_items b ON a.TrackId = b.TrackId
+join invoices c on c.InvoiceId = b.InvoiceId
+join genres d on d.genreid = a.AlbumId
+
+
+
+-- Create a table employee. emp_id is the primary key. Variable types are INT, VARCHAR(40), VARCHAR(40), DATE, VARCHAR(1), INT, (INT, INT)
+-- Because of data integrity issues, you have to add foreign keys later (super_id, branch_id)
+Create table employee (
+emp_id INT primary key,
+first_name Varchar(40),
+last_name Varchar(40),
+birth_day DATE,
+sex VARCHAR(1),
+salary);
+
+--Create table branch; branch_id is the primary key, Variable types are INT, VARCHAR(40), INT, DATE
+--As employee table already exists, we can define the foreign key (mgr_id) with reference to employee(emp_id)
+
+CREATE TABLE branch (
+branch_id INT PRIMARY KEY,
+branch_name VARCHAR(40),
+mgr_id INT,
+mgr_start_date DATE,
+FOREIGN KEY(mgr_id) REFERENCES employee(emp_id) ON DELETE SET NULL
+);
+
+
+--Add to table employee the super_id which is INT. It is the foreign key with reference to employee(emp_id)
+
+ALTER TABLE employee
+ADD super_id INT
+REFERENCES employee(emp_id)
+ON DELETE SET NULL;
+
+--Add to table employee the branch_id which is INT. It is the foreign key with reference to branch(branch_id)
+
+ALTER TABLE employee
+ADD branch_id INT REFERENCES branch(branch_id) ON DELETE SET NULL;
+
+
+--Create table client; client_id is the primary key, Variable types are INT, VARCHAR(40), INT
+--As branch table already exists, we can define the foreign key (branch_id) with reference to branch(branch_id)
+
+CREATE TABLE client (
+client_id INT PRIMARY KEY,
+client_name VARCHAR(40),
+branch_id INT,
+FOREIGN KEY(branch_id) REFERENCES branch(branch_id) ON DELETE SET NULL
+);
+
+
+--Create table works_with; the primary key is a composite of emp_id and client_id. Variable types are INT
+--As employee table already exists, we can define the foreign key (emp_id) with reference to employee(emp_id)
+--As client table already exists, we can define the foreign key (client_id) with reference to client(client_id)
+
+CREATE TABLE works_with (
+emp_id INT,
+client_id INT,
+total_sales INT,
+PRIMARY KEY(emp_id, client_id),
+FOREIGN KEY(emp_id) REFERENCES employee(emp_id) ON DELETE CASCADE,
+FOREIGN KEY(client_id) REFERENCES client(client_id) ON DELETE CASCADE
+);
+--Create table branch_supplier; The primary key is a composite of branch_id and supplier_name. Variable types are INT, VARCHAR(40), VARCHAR(40).
+--As branch table already exists, we can define the foreign key (branch_id) with reference to branch(branch_id)
+
+
+CREATE TABLE branch_supplier (
+branch_id INT,
+supplier_name VARCHAR(40),
+supply_type VARCHAR(40),
+PRIMARY KEY(branch_id, supplier_name),
+FOREIGN KEY(branch_id) REFERENCES branch(branch_id) ON DELETE CASCADE
+);
+
+
+-- See Session_8_practice_tables.xlsx for tables. Start with employees table, and David Wallace.
+-- Attention, neither employees nor branch has entries, so you cannot set neither super_id nor brach_id see NULL
+
+INSERT INTO employee VALUES(100, 'David', 'Wallace', '1967-11-17', 'M', 250000, NULL, NULL);
+
+-- Insert the first branch Corporate
+
+INSERT INTO branch VALUES(1, 'Corporate', 100, '2006-02-09');
+
+-- update the employee table with David’s branch
+
+UPDATE employee
+SET branch_id = 1
+WHERE emp_id = 100;
+
+
+--Insert Jan
+
+INSERT INTO employee VALUES(101, 'Jan', 'Levinson', '1961-05-11', 'F', 110000, 100, 1);
+
+
+--Insert Michael, attention to non-existing branch
+INSERT INTO employee VALUES(102, 'Michael', 'Scott', '1964-03-15', 'M', 75000, 100, NULL);
+-- Insert the first branch Scranton
+INSERT INTO branch VALUES(2, 'Scranton', 102, '1992-04-06');
+-- Update Michael
+UPDATE employee
+SET branch_id = 2
+WHERE emp_id = 102;
+--Insert Angela, Kelly, Stanley
+INSERT INTO employee VALUES(103, 'Angela', 'Martin', '1971-06-25', 'F', 63000, 102, 2);
+INSERT INTO employee VALUES(104, 'Kelly', 'Kapoor', '1980-02-05', 'F', 55000, 102, 2);
+INSERT INTO employee VALUES(105, 'Stanley', 'Hudson', '1958-02-19', 'M', 69000, 102, 2);
+-- Insert Josh, attention, his branch does not exist yet
+INSERT INTO employee VALUES(106, 'Josh', 'Porter', '1969-09-05', 'M', 78000, 100, NULL);
+-- Insert the necessary branch: Stamford
+INSERT INTO branch VALUES(3, 'Stamford', 106, '1998-02-13');
+-- Update Josh
+UPDATE employee
+SET branch_id = 3
+WHERE emp_id = 106;
+-- Insert Andy and Jim
+INSERT INTO employee VALUES(107, 'Andy', 'Bernard', '1973-07-22', 'M', 65000, 106, 3);
+INSERT INTO employee VALUES(108, 'Jim', 'Halpert', '1978-10-01', 'M', 71000, 106, 3);
+-- Insert values to BRANCH SUPPLIER
+INSERT INTO branch_supplier VALUES(2, 'Hammer Mill', 'Paper');
+INSERT INTO branch_supplier VALUES(2, 'Uni-ball', 'Writing Utensils');
+INSERT INTO branch_supplier VALUES(3, 'Patriot Paper', 'Paper');
+INSERT INTO branch_supplier VALUES(2, 'J.T. Forms & Labels', 'Custom Forms');
+INSERT INTO branch_supplier VALUES(3, 'Uni-ball', 'Writing Utensils');
+INSERT INTO branch_supplier VALUES(3, 'Hammer Mill', 'Paper');
+INSERT INTO branch_supplier VALUES(3, 'Stamford Lables', 'Custom Forms');
+-- Insert values to CLIENT
+INSERT INTO client VALUES(400, 'Dunmore Highschool', 2);
+INSERT INTO client VALUES(401, 'Lackawana Country', 2);
+INSERT INTO client VALUES(402, 'FedEx', 3);
+INSERT INTO client VALUES(403, 'John Daly Law, LLC', 3);
+INSERT INTO client VALUES(404, 'Scranton Whitepages', 2);
+INSERT INTO client VALUES(405, 'Times Newspaper', 3);
+INSERT INTO client VALUES(406, 'FedEx', 2);
+-- Insert values to WORKS_WITH
+INSERT INTO works_with VALUES(105, 400, 55000);
+INSERT INTO works_with VALUES(102, 401, 267000);
+INSERT INTO works_with VALUES(108, 402, 22500);
+INSERT INTO works_with VALUES(107, 403, 5000);
+INSERT INTO works_with VALUES(108, 403, 12000);
+INSERT INTO works_with VALUES(105, 404, 33000);
+INSERT INTO works_with VALUES(107, 405, 26000);
+INSERT INTO works_with VALUES(102, 406, 15000);
+INSERT INTO works_with VALUES(105, 406, 130000);
