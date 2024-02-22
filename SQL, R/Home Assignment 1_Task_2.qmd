@@ -1,0 +1,46 @@
+---
+title: "Home Assignment1_Task_2"
+date: "2024-02-11"
+author: "Ankit Adhikari"
+format: revealjs
+embed-resources: true
+error : true
+---
+
+## Introduction
+
+Here we shall present the Most Dangerous Hour
+
+
+
+
+## Which hours seem to be the most dangerous
+
+```{r}
+library(tidyverse)
+library(knitr)
+library(gt)
+library(DT)
+library(data.table)
+library(readxl)
+library(dplyr)
+library(stringr)
+library(lubridate)
+chicago_small <- read_excel("Chicago_small.xlsx")
+chicago_s_data <- data.frame(chicago_small)
+chicago_new <- chicago_small[-c(1,10)]
+names(chicago_new)[names(chicago_new) == "Domestic"] <- "Home"
+chicago_new
+chicago_new$Date <- mdy_hms(chicago_new$Date)
+chicago_new$Time <- hour(chicago_new$Date)
+dangerous_hours1 <- table(chicago_new$Time)
+dangerous_hours1 <- sort(dangerous_hours1, decreasing = TRUE)
+most_dangerous_hours1 <- max(dangerous_hours1)
+counts <- names(dangerous_hours1)[dangerous_hours1 == most_dangerous_hours1]
+for (hour in counts) {
+  cat("Hour:", hour, "Count:", dangerous_hours1[hour], "\n")
+}
+```
+
+
+

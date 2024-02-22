@@ -1,0 +1,147 @@
+---
+title: "Home assgnment 1.qmd"
+date: "2024-02-11"
+author: "Ankit Adhikari"
+format: 
+    html:
+      toc: true
+      toc_float: true
+      toc-location: left
+      mainfont: cursive
+      embed-resources: true
+execute: 
+  echo: true
+  warning: false
+  message: false
+  error: true
+---
+
+# Task 1
+
+## Load Libraries
+
+```{r}
+library(tidyverse)
+library(knitr)
+library(gt)
+library(DT)
+library(data.table)
+library(readxl)
+library(dplyr)
+library(stringr)
+library(lubridate)
+```
+
+## Import Chicago_small.xlsx
+
+```{r}
+Chicago_small <- read_excel("Chicago_small.xlsx")
+Chicago_s_data <- data.frame(Chicago_small)
+Chicago_small_data <- head(Chicago_s_data, n = c(10, 5))
+Chicago_small_data
+```
+
+## How many rows and columns does the dataframe have?
+
+```{r}
+dim(Chicago_small_data)
+```
+
+## Remove the Ward and ID columns and store data to a chicago_new variable!
+
+```{r}
+chicago_new <- Chicago_small[-c(1,10)]
+chicago_new
+```
+
+## Rename column Domestic to Home!
+
+```{r}
+names(chicago_new)[names(chicago_new) == "Domestic"] <- "Home"
+view(chicago_new)
+```
+
+## With sapply display the columns classes
+
+```{r}
+sapply(chicago_new, class)
+```
+
+## With tapply show the number of crimes per year
+
+
+```{r}
+# We Convert chicago_new$Date to Date format and then extract year
+chicago_new$Date <- as.Date(chicago_new$Date, format = "%m/%d/%Y")
+years <- format(chicago_new$Date, "%Y")
+
+# we use tapply to count the no. of time the crimes occur in a year
+crime_per_year <- tapply(chicago_new$Date, years, FUN = length)
+crime_per_year
+
+```
+
+## Create EDA and describe data
+
+```{r}
+summary(chicago_new)
+```
+
+# Task 2
+
+## Which hours seem to be the most dangerous
+
+
+```{r}
+# We have found from the 2nd Quatro Document that the correct answer is Hours:13 and 15. Hence, we use below code for this quatro to display the same.
+chicago_new <- chicago_new[!is.na(chicago_new$Date),]
+hours <- substr(chicago_new$Date, 12, 13)
+hours_of_interest <- c("13", "15")
+counts <- numeric(length(hours_of_interest))
+for (i in seq_along(hours_of_interest)) {
+  counts[i] <- sum(hours == hours_of_interest[i])
+}
+cat("Most dangerous hour(s):\n")
+for (i in seq_along(hours_of_interest)) {
+  cat("Hour:", hours_of_interest[i], "Count:", counts[i], "\n")
+}
+```
+
+# Task 3
+
+## Code for a function called AverageVowels which calculates the average number of vowels per input string
+
+```{r}
+##We Create the function
+AverageVowels <- function(input_string) {
+  if (!is.character(input_string)) {
+    stop("Input must be a string.")
+  }
+  #We make the string to lower case
+  input_string <- tolower(input_string)
+  #We now count the vowels and total characters
+  vowel_count <- 0
+  total_chars <- nchar(input_string)
+  
+  
+## Creating the Vowels vector
+  vowels <- c("a", "e", "i", "o", "u")
+## To repeat on each character in the string and increase vowel count in character is vowel
+for (char in strsplit(input_string, "")[[1]]) {
+    if (char %in% vowels) {
+      vowel_count <- vowel_count + 1
+    }
+}
+
+## We find the Average no. of vowels per string and to round them to 2 decimals
+avg_vowels <- vowel_count / total_chars
+avg_vowels <- round(avg_vowels, 2)
+return(avg_vowels)
+}
+## We Run the function
+names <- c("John", "Jim", "Eugene")
+for (name in names) {
+  avg <- AverageVowels(name)
+  cat(name, ";", avg, "\n")
+}
+```
